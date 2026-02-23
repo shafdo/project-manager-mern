@@ -1,12 +1,12 @@
 import { GraphQLFieldConfigMap, GraphQLID, GraphQLList } from "graphql";
 import ClientType from "@/schema/types/clientType";
-import { clients } from "@/schema/sampleData";
+import Client from "@/models/Client";
 
 const clientQueries: GraphQLFieldConfigMap<unknown, unknown> = {
   clients: {
     type: new GraphQLList(ClientType),
     resolve(parent, args) {
-      return clients;
+      return Client.find(); // Fetch all clients from the database
     },
   },
   client: {
@@ -17,7 +17,7 @@ const clientQueries: GraphQLFieldConfigMap<unknown, unknown> = {
       },
     },
     resolve(parent, args) {
-      return clients.find((client) => client.id === args.id);
+      return Client.findById(args.id); // Fetch a single client by ID from the database
     },
   },
 };

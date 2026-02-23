@@ -1,12 +1,12 @@
 import { GraphQLFieldConfigMap, GraphQLID, GraphQLList } from "graphql";
 import ProjectType from "@/schema/types/projectType";
-import { projects } from "@/schema/sampleData";
+import Project from "@/models/Project";
 
 const projectQueries: GraphQLFieldConfigMap<unknown, unknown> = {
   projects: {
     type: new GraphQLList(ProjectType),
     resolve(parent, args) {
-      return projects;
+      return Project.find(); // Fetch all projects from the database
     },
   },
   project: {
@@ -17,7 +17,7 @@ const projectQueries: GraphQLFieldConfigMap<unknown, unknown> = {
       },
     },
     resolve(parent, args) {
-      return projects.find((project) => project.id === args.id);
+      return Project.findById(args.id); // Fetch a single project by ID from the database
     },
   },
 };

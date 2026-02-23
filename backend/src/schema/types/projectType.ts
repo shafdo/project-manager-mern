@@ -1,6 +1,6 @@
 import { GraphQLID, GraphQLObjectType, GraphQLString } from "graphql";
 import ClientType from "@/schema/types/clientType";
-import { clients } from "@/schema/sampleData";
+import Client from "@/models/Client";
 
 // Project Type
 const ProjectType = new GraphQLObjectType({
@@ -15,7 +15,7 @@ const ProjectType = new GraphQLObjectType({
       type: ClientType,
       resolve(parent) {
         // parent = the project object (project object has clientId field)
-        return clients.find((client) => client.id === parent.clientId);
+        return Client.findById(parent.clientId);
       },
     },
   }),
