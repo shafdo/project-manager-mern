@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import { graphqlHTTP } from "express-graphql";
+import cors from "cors";
 import routes from "@/routes";
 import schema from "@/schema";
 import connectDB from "@/config/db";
@@ -14,6 +15,7 @@ connectDB();
 // Connect to MongoDB
 
 // Express Middleware
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api", routes);
