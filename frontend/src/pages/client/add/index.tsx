@@ -129,7 +129,7 @@ const ClientAdd: React.FC = () => {
           className="flex-1 cursor-pointer"
           onClick={handleReset}
         >
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/client/list" className="flex items-center gap-2">
             <ArrowLeft className="size-6" /> Back
           </Link>
         </Button>

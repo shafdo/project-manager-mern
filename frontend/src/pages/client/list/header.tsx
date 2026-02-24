@@ -18,7 +18,7 @@ const Header = ({ loading, clients }: any) => (
     </div>
 
     <Button asChild size="sm">
-      <a href="/clients/add">
+      <a href="/client/add">
         <Plus className="mr-2 h-4 w-4" />
         Add Client
       </a>

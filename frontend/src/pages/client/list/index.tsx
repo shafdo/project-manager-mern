@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import type { ClientType } from '@/types/client';
-import { useQuery } from '@apollo/client/react';
+import { useMutation, useQuery } from '@apollo/client/react';
 import _ from 'lodash';
 import { GET_CLIENTS } from '@/graphql/queries/client.queries';
 import HeaderCompoennt from './header';
@@ -10,10 +10,12 @@ import SearchComponent from './search';
 import TableComponent from './table';
 import ErrorComponent from './error';
 import DeleteDialogComponent from './delete-dialog';
+import { DELETE_CLIENT } from '@/graphql/mutations/client.mutations';
 
 const ClientListing: React.FC = () => {
   const [search, setSearch] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<ClientType | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // GQ query to fetch clients
   const { data, loading, error, refetch } = useQuery<{ clients: ClientType[] }>(
@@ -23,6 +25,21 @@ const ClientListing: React.FC = () => {
     }
   );
   // GQ query to fetch clients end
+
+  // GQ mutations
+  const [deleteClient] = useMutation(DELETE_CLIENT, {
+    onCompleted: () => {
+      refetch();
+      setDeleteTarget(null);
+      setDeleteError(null);
+    },
+    onError: (err: Error) => {
+      console.error('Error deleting client:', err);
+      setDeleteTarget(null);
+      setDeleteError(err.message);
+    },
+  });
+  // GQ mutations end
 
   const clients: ClientType[] = data?.clients || [];
 
@@ -36,13 +53,10 @@ const ClientListing: React.FC = () => {
   });
   // Filter clients based on search query end
 
-  const handleDelete = (client: ClientType) => {
-    setDeleteTarget(client);
-  };
-
   const confirmDelete = () => {
-    // wire up your DELETE mutation here
+    if (!deleteTarget) return;
     console.log('Deleting client:', deleteTarget);
+    deleteClient({ variables: { id: deleteTarget.id } });
     setDeleteTarget(null);
   };
 
@@ -62,22 +76,16 @@ const ClientListing: React.FC = () => {
 
         {/* ── Error state ── */}
         {error && <ErrorComponent message={error.message} />}
+        {deleteError && <ErrorComponent message={deleteError} />}
 
         {/* ── Table ── */}
         <TableComponent
           search={search}
           filtered={filtered}
           loading={loading}
-          handleDelete={handleDelete}
+          setDeleteTarget={setDeleteTarget}
           clients={clients}
         />
-
-        {/* ── Footer count ── */}
-        {!loading && filtered.length > 0 && (
-          <p className="text-xs text-muted-foreground text-right">
-            Showing {filtered.length} of {clients.length} clients
-          </p>
-        )}
       </div>
 
       {/* ── Delete Confirmation Dialog ── */}

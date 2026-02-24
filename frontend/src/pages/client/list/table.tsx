@@ -24,7 +24,13 @@ import {
 } from 'lucide-react';
 import TableSkeleton from './skeleton';
 
-const TableComponent = ({ search, filtered, loading, handleDelete }: any) => (
+const TableComponent = ({
+  search,
+  filtered,
+  loading,
+  setDeleteTarget,
+  clients,
+}: any) => (
   <>
     <div className="rounded-lg border bg-card shadow-sm overflow-hidden">
       <Table>
@@ -104,7 +110,7 @@ const TableComponent = ({ search, filtered, loading, handleDelete }: any) => (
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive"
-                        onClick={() => handleDelete(client)}
+                        onClick={() => setDeleteTarget(client)}
                       >
                         <Trash2 className="mr-2 h-3.5 w-3.5" />
                         Delete
@@ -117,6 +123,13 @@ const TableComponent = ({ search, filtered, loading, handleDelete }: any) => (
         </TableBody>
       </Table>
     </div>
+
+    {/* ── Footer count ── */}
+    {!loading && filtered.length > 0 && (
+      <p className="text-xs text-muted-foreground text-right">
+        Showing {filtered.length} of {clients.length} clients
+      </p>
+    )}
   </>
 );
 
