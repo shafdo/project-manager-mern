@@ -96,23 +96,23 @@ const TableComponent = ({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                       >
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem asChild>
+                      <DropdownMenuItem asChild className="cursor-pointer">
                         <a href={`/clients/edit/${client.id}`}>
                           <Pencil className="mr-2 h-3.5 w-3.5" />
                           Edit
                         </a>
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
+                        className="text-destructive focus:text-destructive cursor-pointer"
                         onClick={() => setDeleteTarget(client)}
                       >
-                        <Trash2 className="mr-2 h-3.5 w-3.5" />
+                        <Trash2 className="mr-2 h-3.5 w-3.5 text-destructive" />
                         Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>

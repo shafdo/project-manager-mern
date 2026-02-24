@@ -27,18 +27,36 @@ const ClientListing: React.FC = () => {
   // GQ query to fetch clients end
 
   // GQ mutations
-  const [deleteClient] = useMutation(DELETE_CLIENT, {
-    onCompleted: () => {
-      refetch();
-      setDeleteTarget(null);
-      setDeleteError(null);
-    },
-    onError: (err: Error) => {
-      console.error('Error deleting client:', err);
-      setDeleteTarget(null);
-      setDeleteError(err.message);
-    },
-  });
+  const [deleteClient] = useMutation<{ deleteClient: { id: string } }>(
+    DELETE_CLIENT,
+    {
+      update(cache, { data }) {
+        // Refresh the cache to remove the deleted client
+        if (!data) return;
+
+        const existingClientsCache = cache.readQuery<{ clients: ClientType[] }>(
+          {
+            query: GET_CLIENTS,
+          }
+        );
+        const newClients =
+          _.reject(existingClientsCache?.clients, {
+            id: data.deleteClient.id,
+          }) ?? [];
+
+        cache.writeQuery({ query: GET_CLIENTS, data: { clients: newClients } });
+      },
+      onCompleted: () => {
+        setDeleteTarget(null);
+        setDeleteError(null);
+      },
+      onError: (err: Error) => {
+        console.error('Error deleting client:', err);
+        setDeleteTarget(null);
+        setDeleteError(err.message);
+      },
+    }
+  );
   // GQ mutations end
 
   const clients: ClientType[] = data?.clients || [];
@@ -55,7 +73,6 @@ const ClientListing: React.FC = () => {
 
   const confirmDelete = () => {
     if (!deleteTarget) return;
-    console.log('Deleting client:', deleteTarget);
     deleteClient({ variables: { id: deleteTarget.id } });
     setDeleteTarget(null);
   };
