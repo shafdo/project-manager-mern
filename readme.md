@@ -6,7 +6,7 @@ This is going to be a simple project management system. Aiming to cover the core
 
 <div style="display:flex">
 
-![Project Technologies](https://go-skill-icons.vercel.app/api/icons?i=ts,express,graphql,apollo,mongodb,react,tailwind,bun)
+![Project Technologies](https://go-skill-icons.vercel.app/api/icons?i=git,ts,express,graphql,apollo,mongodb,react,tailwind,bun)
 
 </div>
 
