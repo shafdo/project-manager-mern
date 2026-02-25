@@ -1,19 +1,12 @@
 # Project Manager MERN
 
-This is going to be a simple project management system.
+This is going to be a simple project management system. Aiming to cover the core concepts of GraphQL.
 
 ## Technologies Used
 
 <div style="display:flex">
 
-[![My Skills](https://skillicons.dev/icons?i=js)](https://skillicons.dev)
-[![My Skills](https://skillicons.dev/icons?i=express)](https://skillicons.dev)
-[![My Skills](https://skillicons.dev/icons?i=graphql)](https://skillicons.dev)
-[![My Skills](https://skillicons.dev/icons?i=mongodb)](https://skillicons.dev)
-[![My Skills](https://skillicons.dev/icons?i=react)](https://skillicons.dev)
-<img src="./docs/assets/zustand.svg" style="width:50px" />
-[![My Skills](https://skillicons.dev/icons?i=tailwind)](https://skillicons.dev)
-[![My Skills](https://skillicons.dev/icons?i=nodejs)](https://skillicons.dev)
+![Project Technologies](https://go-skill-icons.vercel.app/api/icons?i=ts,express,graphql,apollo,mongodb,react,tailwind,bun)
 
 </div>
 
@@ -23,3 +16,4 @@ This is going to be a simple project management system.
 2. Project CRUD
 3. Associate a project to client
 4. Project page to show the project details including the client information.
+5. BFF layer for existing blog API
