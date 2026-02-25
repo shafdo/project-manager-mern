@@ -175,17 +175,17 @@ const ClientEdit: React.FC = () => {
   ) : (
     <div className="min-h-screen bg-muted/30 flex items-start justify-center p-6 pt-16">
       <div className="w-full max-w-lg space-y-6">
-        <Button
-          type="button"
-          size={'lg'}
-          variant="outline"
-          className="flex-1 cursor-pointer"
-          onClick={handleReset}
-        >
-          <Link to="/client/list" className="flex items-center gap-2">
+        <Link to="/client/list" className="flex items-center gap-2 w-fit">
+          <Button
+            type="button"
+            size={'lg'}
+            variant="outline"
+            className="flex-1 cursor-pointer"
+            onClick={handleReset}
+          >
             <ArrowLeft className="size-6" /> Back
-          </Link>
-        </Button>
+          </Button>
+        </Link>
         {/* Header */}
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-primary p-2">
