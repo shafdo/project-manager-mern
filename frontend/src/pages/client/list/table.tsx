@@ -23,6 +23,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import TableSkeleton from './skeleton';
+import { Link } from 'react-router-dom';
 
 const TableComponent = ({
   search,
@@ -103,10 +104,10 @@ const TableComponent = ({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild className="cursor-pointer">
-                        <a href={`/clients/edit/${client.id}`}>
+                        <Link to={`/client/edit/${client.id}`}>
                           <Pencil className="mr-2 h-3.5 w-3.5" />
                           Edit
-                        </a>
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive cursor-pointer"

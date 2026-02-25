@@ -8,7 +8,7 @@ import { GET_CLIENTS } from '@/graphql/queries/client.queries';
 import HeaderCompoennt from './header';
 import SearchComponent from './search';
 import TableComponent from './table';
-import ErrorComponent from './error';
+import ErrorComponent from '../../../components/ui/error';
 import DeleteDialogComponent from './delete-dialog';
 import { DELETE_CLIENT } from '@/graphql/mutations/client.mutations';
 

@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Plus, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Header = ({ loading, clients }: any) => (
   <div className="flex items-start justify-between gap-4">
@@ -18,10 +19,10 @@ const Header = ({ loading, clients }: any) => (
     </div>
 
     <Button asChild size="sm">
-      <a href="/client/add">
+      <Link to="/client/add">
         <Plus className="mr-2 h-4 w-4" />
         Add Client
-      </a>
+      </Link>
     </Button>
   </div>
 );

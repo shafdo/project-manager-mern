@@ -15,21 +15,23 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
 import {
   UserPlus,
-  Hash,
   User,
   Mail,
   Phone,
   ArrowLeft,
   CheckCircle2,
 } from 'lucide-react';
-import type { ClientType } from '@/types/client';
+import type { ClientType, CreateClientInput } from '@/types/client';
 import { Link } from 'react-router-dom';
+import { useMutation } from '@apollo/client/react';
+import { ADD_CLIENT } from '@/graphql/mutations/client.mutations';
+import ErrorComponent from '@/components/ui/error';
+import ClientSuccess from './client-success';
+import { GET_CLIENTS } from '@/graphql/queries/client.queries';
 
 const validationSchema = Yup.object({
-  id: Yup.string().trim().required('Client ID is required'),
   name: Yup.string().trim().required('Name is required'),
   email: Yup.string()
     .trim()
@@ -43,22 +45,26 @@ const validationSchema = Yup.object({
 
 const ClientAdd: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [submittedValues, setSubmittedValues] = useState<ClientType | null>(
     null
   );
 
-  const formik = useFormik<ClientType>({
+  const formik = useFormik<CreateClientInput>({
     initialValues: {
-      id: '',
       name: '',
       email: '',
       phone: '',
     },
     validationSchema,
     onSubmit: (values) => {
-      console.log('Client submitted:', values);
-      setSubmittedValues(values);
-      setSubmitted(true);
+      createClient({
+        variables: {
+          name: values.name,
+          email: values.email,
+          phone: values.phone,
+        },
+      });
     },
   });
 
@@ -68,54 +74,43 @@ const ClientAdd: React.FC = () => {
     setSubmittedValues(null);
   };
 
-  const isFieldError = (field: keyof ClientType) =>
+  const isFieldError = (field: keyof CreateClientInput) =>
     formik.touched[field] && Boolean(formik.errors[field]);
+
+  // GQ mutations
+  const [createClient, { loading, error, data }] = useMutation<{
+    createClient: ClientType;
+  }>(ADD_CLIENT, {
+    update(cache, { data }) {
+      // Refresh the cache to add the new client
+      if (!data) return;
+
+      const existingClientsCache = cache.readQuery<{ clients: ClientType[] }>({
+        query: GET_CLIENTS,
+      });
+      const newClients = existingClientsCache?.clients.concat([
+        data.createClient,
+      ]);
+
+      cache.writeQuery({ query: GET_CLIENTS, data: { clients: newClients } });
+    },
+    onCompleted: (data) => {
+      setSubmittedValues(data.createClient);
+      setSubmitted(true);
+      setDeleteError(null);
+    },
+    onError: (err: Error) => {
+      setDeleteError(err.message);
+    },
+  });
+  // GQ mutations end
 
   if (submitted && submittedValues) {
     return (
-      <div className="min-h-screen bg-muted/30 flex items-center justify-center p-6">
-        <Card className="w-full max-w-md shadow-lg">
-          <CardContent className="pt-10 pb-8 flex flex-col items-center text-center gap-4">
-            <div className="rounded-full bg-green-100 p-4">
-              <CheckCircle2 className="h-10 w-10 text-green-600" />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">
-                Client Added!
-              </h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                <span className="font-medium text-foreground">
-                  {submittedValues.name}
-                </span>{' '}
-                has been successfully registered.
-              </p>
-            </div>
-            <Separator />
-            <div className="w-full text-left space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">ID</span>
-                <Badge variant="secondary">{submittedValues.id}</Badge>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Email</span>
-                <span className="font-medium">{submittedValues.email}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Phone</span>
-                <span className="font-medium">{submittedValues.phone}</span>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              className="w-full mt-2"
-              onClick={handleReset}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Add Another Client
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <ClientSuccess
+        submittedValues={submittedValues}
+        handleReset={handleReset}
+      />
     );
   }
 
@@ -148,42 +143,18 @@ const ClientAdd: React.FC = () => {
           </div>
         </div>
 
+        {/* ── Error state ── */}
+        {deleteError && <ErrorComponent message={deleteError} />}
+
         {/* Form Card */}
         <Card className="shadow-sm">
-          <CardHeader className="pb-4">
+          <CardHeader className="pb-1">
             <CardTitle className="text-base">Client Information</CardTitle>
             <CardDescription>All fields are required</CardDescription>
           </CardHeader>
 
           <form onSubmit={formik.handleSubmit}>
             <CardContent className="space-y-5">
-              {/* ID */}
-              <div className="space-y-1.5">
-                <Label
-                  htmlFor="id"
-                  className="flex items-center gap-1.5 text-sm font-medium"
-                >
-                  <Hash className="h-3.5 w-3.5 text-muted-foreground" />
-                  Client ID
-                </Label>
-                <Input
-                  id="id"
-                  name="id"
-                  placeholder="e.g. CLT-001"
-                  value={formik.values.id}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  className={
-                    isFieldError('id')
-                      ? 'border-destructive focus-visible:ring-destructive'
-                      : ''
-                  }
-                />
-                {isFieldError('id') && (
-                  <p className="text-xs text-destructive">{formik.errors.id}</p>
-                )}
-              </div>
-
               {/* Name */}
               <div className="space-y-1.5">
                 <Label
@@ -288,7 +259,7 @@ const ClientAdd: React.FC = () => {
               <Button
                 type="submit"
                 className="flex-1 cursor-pointer"
-                disabled={formik.isSubmitting}
+                disabled={loading}
               >
                 <UserPlus className="mr-2 h-4 w-4" />
                 Add Client

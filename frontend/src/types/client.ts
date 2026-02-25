@@ -4,3 +4,5 @@ export interface ClientType {
   email: string;
   phone: string;
 }
+
+export type CreateClientInput = Omit<ClientType, 'id'>;

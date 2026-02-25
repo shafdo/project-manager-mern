@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,6 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import {
-  UserPlus,
   Hash,
   User,
   Mail,
@@ -27,7 +26,11 @@ import {
   Edit,
 } from 'lucide-react';
 import type { ClientType } from '@/types/client';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useMutation, useQuery } from '@apollo/client/react';
+import { GET_CLIENT } from '@/graphql/queries/client.queries';
+import { UPDATE_CLIENT } from '@/graphql/mutations/client.mutations';
+import ErrorComponent from '@/components/ui/error';
 
 const validationSchema = Yup.object({
   id: Yup.string().trim().required('Client ID is required'),
@@ -43,36 +46,81 @@ const validationSchema = Yup.object({
 });
 
 const ClientEdit: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+
+  const navigate = useNavigate();
+  const [client, setClient] = useState<ClientType | null>(null);
   const [submitted, setSubmitted] = useState(false);
-  const [submittedValues, setSubmittedValues] = useState<ClientType | null>(
-    null
+  const [error, setError] = useState<string | null>(null);
+
+  // GQ query to fetch clients
+  const { data, loading: isClientLoading } = useQuery<{ client: ClientType }>(
+    GET_CLIENT,
+    {
+      variables: { id },
+      skip: !id,
+      fetchPolicy: 'cache-and-network',
+    }
   );
+  // GQ query to fetch clients end
+
+  // GQ mutations
+  const [updateClient, { loading: isClientUpdateing }] = useMutation<{
+    updateClient: { id: string };
+  }>(UPDATE_CLIENT, {
+    onCompleted: (data) => {
+      console.log('Updated Successfully');
+      setSubmitted(true);
+    },
+    onError: (err: Error) => {
+      setSubmitted(false);
+      setError(err.message);
+    },
+  });
+  // GQ mutations end
+
+  useEffect(() => {
+    if (isClientLoading) return;
+
+    if (!data?.client) {
+      navigate('/client/list');
+      return;
+    }
+    setClient(data.client);
+  }, [isClientLoading, data?.client, navigate]);
 
   const formik = useFormik<ClientType>({
     initialValues: {
-      id: '',
-      name: '',
-      email: '',
-      phone: '',
+      id: client?.id ?? '',
+      name: client?.name ?? '',
+      email: client?.email ?? '',
+      phone: client?.phone ?? '',
     },
     validationSchema,
     onSubmit: (values) => {
       console.log('Client submitted:', values);
-      setSubmittedValues(values);
-      setSubmitted(true);
+      setClient(values);
+      updateClient({
+        variables: {
+          id: values.id,
+          name: values.name,
+          email: values.email,
+          phone: values.phone,
+        },
+      });
     },
+    enableReinitialize: true,
   });
 
   const handleReset = () => {
     formik.resetForm();
-    setSubmitted(false);
-    setSubmittedValues(null);
+    setError(null);
   };
 
   const isFieldError = (field: keyof ClientType) =>
     formik.touched[field] && Boolean(formik.errors[field]);
 
-  if (submitted && submittedValues) {
+  if (submitted && client) {
     return (
       <div className="min-h-screen bg-muted/30 flex items-center justify-center p-6">
         <Card className="w-full max-w-md shadow-lg">
@@ -82,11 +130,11 @@ const ClientEdit: React.FC = () => {
             </div>
             <div>
               <h2 className="text-xl font-semibold text-foreground">
-                Client Added!
+                Client Successfully Edited!
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
                 <span className="font-medium text-foreground">
-                  {submittedValues.name}
+                  {client.name}
                 </span>{' '}
                 has been successfully registered.
               </p>
@@ -95,32 +143,36 @@ const ClientEdit: React.FC = () => {
             <div className="w-full text-left space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">ID</span>
-                <Badge variant="secondary">{submittedValues.id}</Badge>
+                <Badge variant="secondary">{client.id}</Badge>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Email</span>
-                <span className="font-medium">{submittedValues.email}</span>
+                <span className="font-medium">{client.email}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Phone</span>
-                <span className="font-medium">{submittedValues.phone}</span>
+                <span className="font-medium">{client.phone}</span>
               </div>
             </div>
-            <Button
-              variant="outline"
-              className="w-full mt-2"
-              onClick={handleReset}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Add Another Client
-            </Button>
+            <Link to="/client/list" className="w-full">
+              <Button
+                variant="outline"
+                className="w-full mt-2 cursor-pointer"
+                onClick={handleReset}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Client Listing
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  return (
+  return isClientLoading ? (
+    <p>Loading</p>
+  ) : (
     <div className="min-h-screen bg-muted/30 flex items-start justify-center p-6 pt-16">
       <div className="w-full max-w-lg space-y-6">
         <Button
@@ -130,7 +182,7 @@ const ClientEdit: React.FC = () => {
           className="flex-1 cursor-pointer"
           onClick={handleReset}
         >
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/client/list" className="flex items-center gap-2">
             <ArrowLeft className="size-6" /> Back
           </Link>
         </Button>
@@ -151,10 +203,15 @@ const ClientEdit: React.FC = () => {
 
         {/* Form Card */}
         <Card className="shadow-sm">
-          <CardHeader className="pb-4">
+          <CardHeader className="">
             <CardTitle className="text-base">Client Information</CardTitle>
             <CardDescription>All fields are required</CardDescription>
           </CardHeader>
+
+          {/* ── Error state ── */}
+          <div className="px-6">
+            {error && <ErrorComponent message={error} />}
+          </div>
 
           <form onSubmit={formik.handleSubmit}>
             <CardContent className="space-y-5">
@@ -292,8 +349,14 @@ const ClientEdit: React.FC = () => {
                 className="flex-1 cursor-pointer"
                 disabled={formik.isSubmitting}
               >
-                <Edit className="mr-2 h-4 w-4" />
-                Edit Client
+                {isClientUpdateing ? (
+                  <p>Updating...</p>
+                ) : (
+                  <>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit Client
+                  </>
+                )}
               </Button>
             </CardFooter>
           </form>
